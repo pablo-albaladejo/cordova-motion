@@ -17,30 +17,51 @@
  * under the License.
  */
 var app = {
+
+
     // Application Constructor
-    initialize: function() {
+    initialize: function () {
         document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
     },
 
-    // deviceready Event Handler
-    //
-    // Bind any cordova events here. Common events are:
-    // 'pause', 'resume', etc.
-    onDeviceReady: function() {
-        this.receivedEvent('deviceready');
+    onDeviceReady: function () {
+        var options = { frequency: 500 }; // Update every 5 ms
+        var watchID = navigator.accelerometer.watchAcceleration(this.onSuccess, this.onError, options);
+    },
+    onError(){
+        alert('onError!');
+    },
+    onSuccess: function (motion) {
+        console.log('motion X: ' + motion.x + '\n' +
+            'motion Y: ' + motion.y + '\n' +
+            'motion Z: ' + motion.z + '\n' +
+            'Timestamp: ' + motion.timestamp + '\n');
+
+        app.updateView(motion);
+        app.checkShaken(motion);
+    },
+    updateView: function (motion) {
+        window.document.getElementById("sensor_x").innerHTML = "X: " + motion.x;
+        window.document.getElementById("sensor_y").innerHTML = "Y: " + motion.y;
+        window.document.getElementById("sensor_z").innerHTML = "Z: " + motion.z;
+    },
+    checkShaken: function (motion) {
+        var shakenX = Math.abs(motion.x) > 10;
+        var shakenY = Math.abs(motion.y) > 10;
+
+        if (shakenX || shakenY) {
+            this.shaken();
+        } 
+    },
+    shaken: function () {
+        var body = document.getElementsByTagName("BODY")[0];
+        body.classList.add("shaken");
+        
+        setTimeout(()=>{
+            body.classList.remove("shaken");
+        },3000);
     },
 
-    // Update DOM on a Received Event
-    receivedEvent: function(id) {
-        var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
-
-        listeningElement.setAttribute('style', 'display:none;');
-        receivedElement.setAttribute('style', 'display:block;');
-
-        console.log('Received Event: ' + id);
-    }
 };
 
 app.initialize();
